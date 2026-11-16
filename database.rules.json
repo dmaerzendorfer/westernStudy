@@ -1,0 +1,35 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "lobbies": {
+      "$code": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "matches": {
+      "$matchId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "players": {
+      "$playerId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "events": {
+      "$eventId": {
+        ".read": false,
+        ".write": "!data.exists()"
+      }
+    },
+    "debug": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

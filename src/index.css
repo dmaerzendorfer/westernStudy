@@ -1,0 +1,45 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #2b1a10;
+  color: #f3e3c3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden; /* no scroll bounce while holding the phone */
+  overscroll-behavior: none;
+}
+
+body {
+  /* Long-press must not select text or open menus */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none; /* we handle all touches ourselves */
+}
+
+.screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  text-align: center;
+}
+
+.status {
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
