@@ -43,3 +43,60 @@ body {
   opacity: 0.7;
   font-size: 0.9rem;
 }
+
+.circle {
+  width: min(75vw, 55vh);
+  touch-action: none;
+}
+
+.circle .track,
+.circle .fill {
+  fill: none;
+  stroke-width: 8;
+}
+
+.circle .track {
+  stroke: #4a3020;
+}
+
+.circle .fill {
+  stroke: #d9a441;
+  stroke-linecap: round;
+}
+
+.circle .fill.full {
+  stroke: #e2552d;
+}
+
+.circle .label {
+  fill: currentColor;
+  font-size: 14px;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+button {
+  font: inherit;
+  padding: 0.6rem 1rem;
+  border: 1px solid #d9a441;
+  border-radius: 0.4rem;
+  background: #4a3020;
+  color: inherit;
+}
+
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0 1rem;
+  min-height: 9em;
+  font-size: 0.8rem;
+  font-family: ui-monospace, monospace;
+  opacity: 0.8;
+}
