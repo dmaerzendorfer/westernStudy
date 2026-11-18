@@ -47,7 +47,7 @@ export default function App() {
       setChance(chanceAt(held, h.fillMs))
       if (!h.full) {
         h.full = true
-        rumble(settings.rumbleMs, settings.strength / 100, settings.pulses, settings.gapMs)
+        testRumble('full')
       }
     }
     h.raf = requestAnimationFrame(tick)
@@ -78,6 +78,12 @@ export default function App() {
     }
     setProgress(0)
     setChance(0)
+  }
+
+  // ponytail: debug log of every vibrate call, drop once rumble is confirmed on the phones
+  function testRumble(source: string) {
+    const { ok, pattern } = rumble(settings.rumbleMs, settings.pulses, settings.gapMs)
+    addLog(`Rumble (${source}) ${ok ? 'sent' : 'REFUSED'} [${pattern.join(',')}]`)
   }
 
   function testHit() {
@@ -141,6 +147,7 @@ export default function App() {
             </label>
           ))}
           <div className="buttons">
+            <button onClick={() => testRumble('button')}>Test rumble</button>
             <button onClick={() => updateSettings(DEFAULT_SETTINGS)}>Reset</button>
             <button onClick={() => setShowSettings(false)}>Close</button>
           </div>

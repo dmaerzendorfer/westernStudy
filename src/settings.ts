@@ -1,9 +1,8 @@
 // Tuning values for the capability demo, editable on the settings panel and kept per phone
 
 export const SETTING_DEFS = [
-  // Rumble when the circle is full (10% reached); max values keep the pattern under Chrome's length cap
-  { key: 'strength', label: 'Rumble strength', unit: '%', min: 10, max: 100, step: 10, def: 100 },
-  { key: 'rumbleMs', label: 'Rumble length per pulse', unit: 'ms', min: 10, max: 300, step: 10, def: 80 },
+  // Rumble when the circle is full (10% reached); motors need ~50 ms to be felt at all
+  { key: 'rumbleMs', label: 'Rumble length per pulse', unit: 'ms', min: 50, max: 500, step: 10, def: 150 },
   { key: 'pulses', label: 'Rumble pulses', unit: '', min: 1, max: 3, step: 1, def: 1 },
   { key: 'gapMs', label: 'Gap between pulses', unit: 'ms', min: 20, max: 300, step: 10, def: 80 },
   { key: 'flashMs', label: 'Torch flash on shot', unit: 'ms', min: 0, max: 500, step: 10, def: 120 },

@@ -5,32 +5,22 @@ let torchTrack: MediaStreamTrack | null = null
 
 export const canVibrate = 'vibrate' in navigator
 
+// Returns false when the browser refused the call (no user activation, pattern rejected)
 export function vibrate(pattern: number | number[]) {
-  if (canVibrate) navigator.vibrate(pattern)
-  else console.debug('[vibrate]', pattern) // desktop has no vibration, log instead
+  if (canVibrate) return navigator.vibrate(pattern)
+  console.debug('[vibrate]', pattern) // desktop has no vibration, log instead
+  return false
 }
 
-// The Vibration API has no intensity, so strength < 100% pulses the motor on/off quickly.
-// ponytail: whether this feels weaker depends on the phone's motor, Capacitor has real amplitude
-const PWM_PERIOD_MS = 20
-
-function rumblePattern(ms: number, strength: number) {
-  if (strength >= 1) return [ms]
-  const on = Math.max(1, Math.round(PWM_PERIOD_MS * strength))
-  const pattern: number[] = []
-  for (let t = 0; t < ms; t += PWM_PERIOD_MS) pattern.push(on, PWM_PERIOD_MS - on)
-  pattern.pop() // end on "on"
-  return pattern
-}
-
-// Short rumble: `pulses` buzzes of `ms` each, `gapMs` apart
-export function rumble(ms: number, strength: number, pulses: number, gapMs: number) {
+// Short rumble: `pulses` buzzes of `ms` each, `gapMs` apart.
+// ponytail: the Vibration API has no intensity, use @capacitor/haptics if strength levels are needed
+export function rumble(ms: number, pulses: number, gapMs: number) {
   const pattern: number[] = []
   for (let i = 0; i < pulses; i++) {
     if (i > 0) pattern.push(gapMs)
-    pattern.push(...rumblePattern(ms, strength))
+    pattern.push(ms)
   }
-  vibrate(pattern)
+  return { ok: vibrate(pattern), pattern }
 }
 
 // Call from a tap: audio and vibration need a user gesture first
