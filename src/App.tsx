@@ -1,6 +1,6 @@
 import { useRef, useState, type PointerEvent } from 'react'
 import { isFirebaseConfigured } from './lib/firebase'
-import { canVibrate, flash, playHit, playShot, rumble, unlockDevice } from './lib/device'
+import { canVibrate, flash, playHit, playShot, rumble, unlockDevice, vibrate } from './lib/device'
 import { DEFAULT_SETTINGS, SETTING_DEFS, loadSettings, saveSettings, type Settings } from './settings'
 
 const R = 45
@@ -148,6 +148,8 @@ export default function App() {
           ))}
           <div className="buttons">
             <button onClick={() => testRumble('button')}>Test rumble</button>
+            {/* ponytail: diagnostic, same long call as the version that worked; drop once rumble is fixed */}
+            <button onClick={() => addLog(`Rumble 2 s ${vibrate(2000) ? 'sent' : 'REFUSED'}`)}>Test 2 s</button>
             <button onClick={() => updateSettings(DEFAULT_SETTINGS)}>Reset</button>
             <button onClick={() => setShowSettings(false)}>Close</button>
           </div>
