@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from 'react'
+import { Fragment, useRef, useState, type PointerEvent } from 'react'
 import { isFirebaseConfigured } from './lib/firebase'
 import { canVibrate, flash, playHit, playShot, rumble, unlockDevice, vibrate } from './lib/device'
 import { DEFAULT_SETTINGS, SETTING_DEFS, loadSettings, saveSettings, type Settings } from './settings'
@@ -6,7 +6,8 @@ import { DEFAULT_SETTINGS, SETTING_DEFS, loadSettings, saveSettings, type Settin
 const R = 45
 const CIRCUMFERENCE = 2 * Math.PI * R
 
-type Hold = { start: number; fillMs: number; full: boolean; raf: number }
+// rampMs: time from full to 100% hit chance, random per hold
+type Hold = { start: number; fillMs: number; rampMs: number; full: boolean; raf: number }
 
 // Step 1 capability demo: hold anywhere to fill, short rumble when full, shot sound + torch flash
 export default function App() {
@@ -20,8 +21,11 @@ export default function App() {
   const hold = useRef<Hold | null>(null)
 
   const addLog = (line: string) => setLog((l) => [line, ...l].slice(0, 6))
-  const chanceAt = (heldMs: number, fillMs: number) =>
-    Math.min(1, (settings.baseChance + ((heldMs - fillMs) / 1000) * settings.chancePerSec) / 100)
+  // Linear from the base chance (at full) to 100% after rampMs more holding
+  const chanceAt = (heldMs: number, h: Hold) => {
+    const base = settings.baseChance / 100
+    return base + (1 - base) * Math.min(1, (heldMs - h.fillMs) / h.rampMs)
+  }
 
   function updateSettings(next: Settings) {
     setSettings(next)
@@ -44,7 +48,7 @@ export default function App() {
     const held = performance.now() - h.start
     setProgress(Math.min(1, held / h.fillMs))
     if (held >= h.fillMs) {
-      setChance(chanceAt(held, h.fillMs))
+      setChance(chanceAt(held, h))
       if (!h.full) {
         h.full = true
         testRumble('full')
@@ -56,8 +60,8 @@ export default function App() {
   function onDown(e: PointerEvent<HTMLElement>) {
     if (hold.current || (e.target as Element).closest('button, .settings')) return
     e.currentTarget.setPointerCapture(e.pointerId) // keep the hold if the finger slides
-    const { fillMinMs: min, fillMaxMs: max } = settings
-    hold.current = { start: performance.now(), fillMs: min + Math.random() * (max - min), full: false, raf: 0 }
+    const { fillMs, rampMinMs: min, rampMaxMs: max } = settings
+    hold.current = { start: performance.now(), fillMs, rampMs: min + Math.random() * (max - min), full: false, raf: 0 }
     tick()
   }
 
@@ -68,13 +72,13 @@ export default function App() {
     cancelAnimationFrame(h.raf)
     const held = performance.now() - h.start
     if (h.full) {
-      const c = chanceAt(held, h.fillMs)
+      const c = chanceAt(held, h)
       const hit = Math.random() < c
       playShot()
       flash(settings.flashMs)
-      addLog(`Shot ${held.toFixed(0)} ms (fill ${h.fillMs.toFixed(0)}) ${(c * 100).toFixed(0)}% -> ${hit ? 'HIT' : 'miss'}`)
+      addLog(`Shot ${held.toFixed(0)} ms (to 100% in ${h.rampMs.toFixed(0)}) ${(c * 100).toFixed(0)}% -> ${hit ? 'HIT' : 'miss'}`)
     } else {
-      addLog(`Interrupted at ${held.toFixed(0)} ms (fill ${h.fillMs.toFixed(0)})`)
+      addLog(`Interrupted at ${held.toFixed(0)} ms (fill ${h.fillMs})`)
     }
     setProgress(0)
     setChance(0)
@@ -132,20 +136,23 @@ export default function App() {
       {showSettings && (
         <div className="settings">
           <h2>Settings</h2>
-          {SETTING_DEFS.map((d) => (
-            <label key={d.key}>
-              <span>
-                {d.label}: {settings[d.key]} {d.unit}
-              </span>
-              <input
-                type="range"
-                min={d.min}
-                max={d.max}
-                step={d.step}
-                value={settings[d.key]}
-                onChange={(e) => updateSettings({ ...settings, [d.key]: Number(e.target.value) })}
-              />
-            </label>
+          {SETTING_DEFS.map((d, i) => (
+            <Fragment key={d.key}>
+              {d.group !== SETTING_DEFS[i - 1]?.group && <h3>{d.group}</h3>}
+              <label>
+                <span>
+                  {d.label}: {settings[d.key]} {d.unit}
+                </span>
+                <input
+                  type="range"
+                  min={d.min}
+                  max={d.max}
+                  step={d.step}
+                  value={settings[d.key]}
+                  onChange={(e) => updateSettings({ ...settings, [d.key]: Number(e.target.value) })}
+                />
+              </label>
+            </Fragment>
           ))}
           <div className="buttons">
             <button onClick={() => testRumble('button')}>Test rumble</button>
