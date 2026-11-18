@@ -82,8 +82,9 @@ export default function App() {
 
   // ponytail: debug log of every vibrate call, drop once rumble is confirmed on the phones
   function testRumble(source: string) {
-    const { ok, pattern } = rumble(settings.rumbleMs, settings.pulses, settings.gapMs)
-    addLog(`Rumble (${source}) ${ok ? 'sent' : 'REFUSED'} [${pattern.join(',')}]`)
+    const { rumbleMs, pulses, gapMs } = settings
+    const ok = rumble(rumbleMs, pulses, gapMs)
+    addLog(`Rumble (${source}) ${ok ? 'sent' : 'REFUSED'} ${pulses}x ${rumbleMs} ms, gap ${gapMs} ms`)
   }
 
   function testHit() {

@@ -12,15 +12,21 @@ export function vibrate(pattern: number | number[]) {
   return false
 }
 
+// Nothing OS (Phone 2a) silently drops short vibrations (<= 500 ms) but plays a 2 s one,
+// so each pulse requests a long vibration and cancels it after `ms`.
+const LONG_VIBRATION_MS = 2000
+
+function pulse(ms: number) {
+  const ok = vibrate(LONG_VIBRATION_MS)
+  setTimeout(() => vibrate(0), ms)
+  return ok
+}
+
 // Short rumble: `pulses` buzzes of `ms` each, `gapMs` apart.
-// ponytail: the Vibration API has no intensity, use @capacitor/haptics if strength levels are needed
+// ponytail: timer-based, can jitter a few ms; the Vibration API has no intensity, use @capacitor/haptics for that
 export function rumble(ms: number, pulses: number, gapMs: number) {
-  const pattern: number[] = []
-  for (let i = 0; i < pulses; i++) {
-    if (i > 0) pattern.push(gapMs)
-    pattern.push(ms)
-  }
-  return { ok: vibrate(pattern), pattern }
+  for (let i = 1; i < pulses; i++) setTimeout(() => pulse(ms), i * (ms + gapMs))
+  return pulse(ms)
 }
 
 // Call from a tap: audio and vibration need a user gesture first
