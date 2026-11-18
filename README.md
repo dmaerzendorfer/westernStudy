@@ -60,7 +60,12 @@ Project layout:
 | Path                  | What                                                                   |
 | --------------------- | ---------------------------------------------------------------------- |
 | `src/main.tsx`        | Entry, registers the service worker                                    |
-| `src/App.tsx`         | Placeholder screen (shows whether Firebase is configured)              |
+| `src/App.tsx`         | Main menu, join via `?lobby=CODE`, switches lobby / game / win screens |
+| `src/Lobby.tsx`       | Lobby: QR code, names, host settings drawer, start match               |
+| `src/Game.tsx`        | Countdown, match (demo lose-a-life button), win screen                 |
+| `src/lib/lobby.ts`    | Lobby and match state in Firebase (`lobbies/{code}`)                   |
+| `src/lib/device.ts`   | Rumble, sound, torch, wake lock                                        |
+| `src/settings.ts`     | Match settings (lives, rumble, hit chance, indicator)                  |
 | `src/lib/firebase.ts` | Firebase app + Realtime Database from `VITE_FIREBASE_*` env vars       |
 | `vite.config.ts`      | React, PWA manifest (`fullscreen`), optional basic SSL for LAN         |
 | `public/icons/`       | App icons (placeholder crosshair)                                      |
@@ -70,7 +75,7 @@ Project layout:
 Environment variables go in `.env.local` (git-ignored) and in Vercel under
 Project → Settings → Environment Variables (same names).
 
-## Step 1 – Capability demo (current step)
+## Step 1 – Capability demo (done)
 
 Goal: find out whether a PWA is good enough before building the game.
 
@@ -93,7 +98,9 @@ Decision after the demo:
 - Rumble feels strong and responsive enough -> continue with the PWA.
 - Rumble too weak, laggy or too limited -> switch to Capacitor.
 
-## Step 2 – Sessions
+## Step 2 – Sessions (current step)
+
+Lobby flow is built: menu -> Play creates `lobbies/{code}` -> QR code / link -> guest joins -> names -> host settings -> countdown -> match -> win screen. The match itself is a demo button until Step 3.
 
 - One phone creates a session with a short code, the other joins.
 - Both phones subscribe to the session state.

@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate', // new deploy = new version on next app start
       includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Western Duel',
+        name: 'High Noon Duel',
         short_name: 'Duel',
         description: 'Western duel prototype for a uni study',
         display: 'fullscreen', // no browser UI, no status bar

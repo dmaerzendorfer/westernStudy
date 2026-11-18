@@ -28,8 +28,9 @@ export function rumble(ms: number, pulses: number, gapMs: number, requestMs: num
   return pulse(ms, requestMs)
 }
 
-// Call from a tap: audio and vibration need a user gesture first
+// Call from a tap: audio and vibration need a user gesture first. Only the first call does anything.
 export async function unlockDevice() {
+  if (audio) return
   audio = new AudioContext() // created synchronously inside the gesture
   void audio.resume()
   const [torch, wakeLock] = await Promise.all([initTorch(), keepAwake()])
@@ -100,6 +101,22 @@ export function playShot() {
   gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45)
   src.connect(filter).connect(gain).connect(audio.destination)
   src.start(t)
+}
+
+// Countdown tick (3, 2, 1) and a higher, longer tone for "Draw!"
+export function playBeep(final: boolean) {
+  if (!audio) return
+  const t = audio.currentTime
+  const len = final ? 0.5 : 0.15
+  const osc = audio.createOscillator()
+  osc.type = 'triangle'
+  osc.frequency.setValueAtTime(final ? 1320 : 660, t)
+  const gain = audio.createGain()
+  gain.gain.setValueAtTime(0.5, t)
+  gain.gain.exponentialRampToValueAtTime(0.001, t + len)
+  osc.connect(gain).connect(audio.destination)
+  osc.start(t)
+  osc.stop(t + len)
 }
 
 export function playHit() {

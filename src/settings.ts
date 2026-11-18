@@ -1,8 +1,10 @@
-// Tuning values for the capability demo, editable on the settings panel and kept per phone
+// Match settings. The host edits them in the lobby; they are stored in the lobby for both phones
+// and kept on the host's phone as defaults for the next lobby.
 
 // `group` is the heading the slider appears under on the settings panel.
 // `toggle` entries are on/off checkboxes stored as 1/0.
 export const SETTING_DEFS = [
+  { group: 'Match', key: 'lives', label: 'Lives per player', unit: '', min: 1, max: 10, step: 1, def: 3 },
   // Rumble when the circle is full. Nothing OS (Phone 2a) ignores the cancel, so each pulse
   // lasts at least the request length.
   { group: 'Rumble', key: 'rumbleOn', label: 'Rumble when full', toggle: true, def: 1 },
@@ -15,6 +17,8 @@ export const SETTING_DEFS = [
   { group: 'Flash', key: 'flashMs', label: 'Flash length', unit: 'ms', min: 0, max: 500, step: 10, def: 120 },
   { group: 'Sound', key: 'soundOn', label: 'Shot and hit sounds', toggle: true, def: 1 },
   { group: 'Fill time', key: 'fillMs', label: 'Time to fill the circle', unit: 'ms', min: 0, max: 4000, step: 100, def: 1500 },
+  // The study condition: hit chance shown on screen or hidden
+  { group: 'Hit chance', key: 'showIndicator', label: 'Show hit chance indicator', toggle: true, def: 1 },
   { group: 'Hit chance', key: 'baseChance', label: 'Hit chance when full', unit: '%', min: 0, max: 100, step: 5, def: 10 },
   // Time from full to 100%, drawn at random between min and max on every hold
   { group: 'Hit chance', key: 'rampMinMs', label: 'Time to 100%, min', unit: 'ms', min: 500, max: 10000, step: 100, def: 3000 },

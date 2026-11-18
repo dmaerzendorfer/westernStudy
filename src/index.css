@@ -91,19 +91,21 @@ button {
   color: inherit;
 }
 
-.log {
-  list-style: none;
-  margin: 0;
-  padding: 0 1rem;
-  min-height: 9em;
-  font-size: 0.8rem;
-  font-family: ui-monospace, monospace;
-  opacity: 0.8;
+/* Host settings: side drawer over the lobby */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
 }
 
 .settings {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(85vw, 24rem);
+  box-shadow: -0.5rem 0 1.5rem rgb(0 0 0 / 0.5);
+  animation: slide-in 0.2s ease-out;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -147,4 +149,148 @@ button {
   width: 1.4rem;
   height: 1.4rem;
   margin: 0;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+input {
+  user-select: text; /* body disables selection for long-presses; typing a name needs it */
+  -webkit-user-select: text;
+}
+
+button:disabled {
+  opacity: 0.4;
+}
+
+button.big {
+  font-size: 1.3rem;
+  padding: 0.9rem 2.5rem;
+  background: #d9a441;
+  color: #2b1a10;
+  font-weight: bold;
+}
+
+.buttons.column {
+  flex-direction: column;
+}
+
+.title {
+  font-size: 2.6rem;
+  margin: 0 1rem 1.5rem;
+  color: #d9a441;
+  letter-spacing: 0.05em;
+}
+
+.error {
+  color: #ff8a65;
+  padding: 0 1rem;
+}
+
+.version {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+.lobby {
+  justify-content: flex-start;
+  padding-top: calc(env(safe-area-inset-top) + 1rem);
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.lobby h2 {
+  margin: 0.5rem 0;
+}
+
+.qr {
+  background: #fff; /* scanners need contrast and a quiet zone */
+  padding: 0.75rem;
+  border-radius: 0.4rem;
+  line-height: 0;
+}
+
+.link {
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+  padding: 0 1rem;
+  color: inherit;
+  user-select: text; /* body disables selection; the join link must be copyable */
+  -webkit-user-select: text;
+}
+
+.lobby h2 {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.players {
+  list-style: none;
+  margin: 0.5rem 0 1rem;
+  padding: 0 1rem;
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.players li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.6rem;
+}
+
+.players input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid #d9a441;
+  border-radius: 0.4rem;
+  background: #1d1209;
+  color: inherit;
+}
+
+.players .name {
+  flex: 1;
+  text-align: left;
+  padding: 0.5rem;
+}
+
+.tags {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.countdown {
+  font-size: 5rem;
+  font-weight: bold;
+  margin: 0.5rem;
+  color: #d9a441;
+}
+
+.game {
+  justify-content: space-evenly;
+}
+
+.lives {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.hearts {
+  font-size: 2rem;
+  color: #e2552d;
+  letter-spacing: 0.15em;
+}
+
+.hearts .lost {
+  color: #4a3020;
 }
