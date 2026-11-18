@@ -1,12 +1,14 @@
 :root {
   color-scheme: dark;
-  font-family: system-ui, sans-serif;
+  font-family: 'Anton', Impact, sans-serif; /* bundled via @fontsource/anton, one weight only */
+  letter-spacing: 0.02em;
   background: #2b1a10;
   color: #f3e3c3;
 }
 
 * {
   box-sizing: border-box;
+  font-weight: 400; /* Anton has no bold; faux bold looks smeared */
 }
 
 html,
@@ -49,6 +51,10 @@ body {
   pointer-events: none; /* the whole screen is the hold area */
 }
 
+.circle .bg {
+  fill: rgb(176 128 88 / 0.35); /* see-through, so the revolver shows behind */
+}
+
 .circle .track,
 .circle .fill {
   fill: none;
@@ -56,7 +62,7 @@ body {
 }
 
 .circle .track {
-  stroke: #4a3020;
+  stroke: rgb(74 48 32 / 0.6);
 }
 
 .circle .fill {
@@ -70,8 +76,10 @@ body {
 
 .circle .label {
   fill: currentColor;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 22px;
+  stroke: #2b1a10; /* outline keeps it readable over the metal */
+  stroke-width: 1.5px;
+  paint-order: stroke;
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
@@ -171,7 +179,6 @@ button.big {
   padding: 0.9rem 2.5rem;
   background: #d9a441;
   color: #2b1a10;
-  font-weight: bold;
 }
 
 .buttons.column {
@@ -269,28 +276,188 @@ button.big {
 }
 
 .countdown {
-  font-size: 5rem;
-  font-weight: bold;
+  font-size: 6rem;
   margin: 0.5rem;
   color: #d9a441;
 }
 
+/* Lobby: QR on the left, players on the right in landscape */
+.join,
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.side {
+  width: min(24rem, 100%);
+}
+
+@media (orientation: landscape) {
+  .lobby {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .side {
+    width: min(24rem, 45vw);
+  }
+}
+
+/* Duel screen (landscape, from the mockup): barrel points left at the opponent */
 .game {
-  justify-content: space-evenly;
+  position: relative;
+  overflow: hidden;
 }
 
 .lives {
+  position: absolute;
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.5rem;
+  z-index: 3;
+}
+
+.lives.enemy {
+  top: calc(env(safe-area-inset-top) + 3vh);
+  left: 28%;
+}
+
+.lives.you {
+  bottom: calc(env(safe-area-inset-bottom) + 3vh);
+  left: 50%;
 }
 
 .hearts {
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: #e2552d;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.3em;
 }
 
 .hearts .lost {
   color: #4a3020;
+}
+
+.readout {
+  position: absolute;
+  left: calc(env(safe-area-inset-left) + 5vw);
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: left;
+  z-index: 3;
+}
+
+.chance {
+  margin: 0;
+  font-size: 26vh;
+  line-height: 1;
+}
+
+/* HIT!/miss pops out from behind the gun, floats up and drifts sideways, then fades */
+.particle {
+  position: absolute;
+  z-index: 1;
+  font-size: 10vh;
+  color: #f3e3c3;
+  pointer-events: none;
+  translate: -50% -50%;
+  animation: float-away 1.4s ease-out forwards;
+}
+
+.particle.hit {
+  color: #e2552d;
+  font-size: 14vh;
+}
+
+@keyframes float-away {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.5), -6vh) scale(1.1) rotate(var(--rot));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), -14vh) scale(0.9) rotate(calc(var(--rot) * 2));
+  }
+}
+
+/* Whole screen flashes red on the phone that was hit */
+.hit-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: #e2552d;
+  pointer-events: none;
+  animation: hit-flash 0.45s ease-out forwards;
+}
+
+@keyframes hit-flash {
+  from {
+    opacity: 0.75;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.gun {
+  --w: min(84vw, 175vh); /* revolver.webp is 0.492 tall per width: 175vh = 86% of the height */
+  position: absolute;
+  z-index: 2; /* above the particles, so they appear from behind it */
+  right: calc(env(safe-area-inset-right) + 2vw);
+  top: calc(50% - var(--w) * 0.246);
+  width: var(--w);
+  transform-origin: 75% 80%; /* recoil pivots around the grip */
+  pointer-events: none;
+}
+
+.revolver {
+  display: block;
+  width: 100%;
+}
+
+.gun .circle {
+  position: absolute;
+  left: 64%;
+  top: 58%;
+  width: 25%;
+  translate: -50% -50%;
+}
+
+/* Right edge of the flash sits on the barrel tip (0.2% / 13.4% of the image) */
+.gun .muzzle {
+  position: absolute;
+  left: -9.8%;
+  top: 13.4%;
+  width: 10%;
+  translate: 0 -50%;
+  opacity: 0;
+}
+
+.gun.fire {
+  animation: recoil 0.25s ease-out;
+}
+
+.gun.fire .muzzle {
+  animation: muzzle 0.15s ease-out;
+}
+
+@keyframes recoil {
+  30% {
+    rotate: 7deg; /* barrel (on the left) kicks up */
+  }
+}
+
+@keyframes muzzle {
+  0% {
+    opacity: 1;
+  }
 }

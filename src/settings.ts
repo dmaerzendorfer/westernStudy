@@ -7,7 +7,7 @@ export const SETTING_DEFS = [
   { group: 'Match', key: 'lives', label: 'Lives per player', unit: '', min: 1, max: 10, step: 1, def: 3 },
   // Rumble when the circle is full. Nothing OS (Phone 2a) ignores the cancel, so each pulse
   // lasts at least the request length.
-  { group: 'Rumble', key: 'rumbleOn', label: 'Rumble when full', toggle: true, def: 1 },
+  { group: 'Rumble', key: 'rumbleOn', label: 'Rumble (when full and on hits)', toggle: true, def: 1 },
   { group: 'Rumble', key: 'rumbleMs', label: 'Length per pulse', unit: 'ms', min: 50, max: 2000, step: 1, def: 300 },
   { group: 'Rumble', key: 'pulses', label: 'Pulses', unit: '', min: 0, max: 10, step: 1, def: 3 },
   { group: 'Rumble', key: 'gapMs', label: 'Gap between pulses', unit: 'ms', min: 20, max: 500, step: 10, def: 200 },

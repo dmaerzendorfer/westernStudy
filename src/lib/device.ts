@@ -1,6 +1,27 @@
 // Device feedback for the capability demo: audio, vibration, torch, wake lock
+import shotUrl from '../assets/revolver-shot.mp3'
+import hitUrl from '../assets/hit.mp3'
+import cockUrl from '../assets/cock.mp3'
 
 let audio: AudioContext | null = null
+// Decoded once on the first tap, so each sound starts without delay
+const SAMPLE_URLS = { shot: shotUrl, hit: hitUrl, cock: cockUrl }
+type Sample = { buffer: AudioBuffer; start: number; duration: number } // seconds, silence trimmed
+const samples: Partial<Record<keyof typeof SAMPLE_URLS, Sample>> = {}
+
+// Finds where the sound actually starts and ends, so silence padding in a file (cock.mp3 has
+// 0.7 s before the click) doesn't delay playback
+function trimSilence(buffer: AudioBuffer, threshold = 0.02): Sample {
+  const data = buffer.getChannelData(0)
+  let first = data.findIndex((v) => Math.abs(v) > threshold)
+  if (first < 0) first = 0
+  let last = data.length - 1
+  while (last > first && Math.abs(data[last]) <= threshold) last--
+  const rate = buffer.sampleRate
+  const start = Math.max(0, first / rate - 0.01) // keep 10 ms so the attack isn't clipped
+  const end = Math.min(buffer.duration, last / rate + 0.1) // and a short natural tail
+  return { buffer, start, duration: end - start }
+}
 let torchTrack: MediaStreamTrack | null = null
 
 export const canVibrate = 'vibrate' in navigator
@@ -33,6 +54,7 @@ export async function unlockDevice() {
   if (audio) return
   audio = new AudioContext() // created synchronously inside the gesture
   void audio.resume()
+  void loadSamples(audio)
   const [torch, wakeLock] = await Promise.all([initTorch(), keepAwake()])
 
   // Wake lock is dropped and the camera may stop when the app goes to the background
@@ -82,9 +104,38 @@ export function flash(ms: number) {
   setTimeout(() => void setTorch(false), ms)
 }
 
-// ponytail: synthesized sounds, swap for real .mp3 files in public/ during polish
+function loadSamples(ctx: AudioContext) {
+  return Promise.all(
+    Object.entries(SAMPLE_URLS).map(async ([name, url]) => {
+      try {
+        const buffer = await ctx.decodeAudioData(await (await fetch(url)).arrayBuffer())
+        samples[name as keyof typeof SAMPLE_URLS] = trimSilence(buffer)
+      } catch {
+        // keeps the synthesized fallback for that sound
+      }
+    }),
+  )
+}
+
+// Returns false while the sample isn't loaded yet, so the caller can synthesize instead
+function playSample(name: keyof typeof SAMPLE_URLS) {
+  const sample = samples[name]
+  if (!audio || !sample) return false
+  const src = audio.createBufferSource()
+  src.buffer = sample.buffer
+  src.connect(audio.destination)
+  src.start(0, sample.start, sample.duration)
+  return true
+}
+
+// Hammer being cocked when the circle is full (src/assets/cock.mp3, freesound community); silent until loaded
+export function playCock() {
+  playSample('cock')
+}
+
+// Revolver sample (src/assets/revolver-shot.mp3); synthesized bang until it has loaded
 export function playShot() {
-  if (!audio) return
+  if (!audio || playSample('shot')) return
   const t = audio.currentTime
   const noise = audio.createBuffer(1, audio.sampleRate * 0.5, audio.sampleRate)
   const data = noise.getChannelData(0)
@@ -119,8 +170,9 @@ export function playBeep(final: boolean) {
   osc.stop(t + len)
 }
 
+// Played on the phone of the player who was hit (src/assets/hit.mp3); synthesized until loaded
 export function playHit() {
-  if (!audio) return
+  if (!audio || playSample('hit')) return
   const t = audio.currentTime
   const osc = audio.createOscillator()
   osc.type = 'square'

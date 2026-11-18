@@ -24,53 +24,56 @@ export default function LobbyScreen({ code, lobby, onLeave }: Props) {
 
   return (
     <main className="screen lobby">
-      <h2>Lobby {code}</h2>
-
-      <div className="qr">
-        <QRCode value={url} size={180} />
+      <div className="join">
+        <h2>Lobby {code}</h2>
+        <div className="qr">
+          <QRCode value={url} size={160} />
+        </div>
+        <a className="status link" href={url} target="_blank" rel="noreferrer">
+          {url}
+        </a>
       </div>
-      <a className="status link" href={url} target="_blank" rel="noreferrer">
-        {url}
-      </a>
 
-      <ul className="players">
-        {players.map(([id, p]) => (
-          <li key={id}>
-            {id === playerId ? (
-              <input
-                value={draft}
-                maxLength={20}
-                aria-label="Your name"
-                onChange={(e) => {
-                  setDraft(e.target.value)
-                  if (e.target.value.trim()) void setName(code, e.target.value.trim())
-                }}
-                onBlur={commitName}
-                onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-              />
-            ) : (
-              <span className="name">{p.name}</span>
-            )}
-            <span className="tags">
-              {id === lobby.hostId && 'Host'}
-              {id === playerId && ' (you)'}
-            </span>
-          </li>
-        ))}
-        {players.length < 2 && <li className="status">Waiting for the second player to scan the code...</li>}
-      </ul>
+      <div className="side">
+        <ul className="players">
+          {players.map(([id, p]) => (
+            <li key={id}>
+              {id === playerId ? (
+                <input
+                  value={draft}
+                  maxLength={20}
+                  aria-label="Your name"
+                  onChange={(e) => {
+                    setDraft(e.target.value)
+                    if (e.target.value.trim()) void setName(code, e.target.value.trim())
+                  }}
+                  onBlur={commitName}
+                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                />
+              ) : (
+                <span className="name">{p.name}</span>
+              )}
+              <span className="tags">
+                {id === lobby.hostId && 'Host'}
+                {id === playerId && ' (you)'}
+              </span>
+            </li>
+          ))}
+          {players.length < 2 && <li className="status">Waiting for the second player to scan the code...</li>}
+        </ul>
 
-      {isHost ? (
-        <button className="big" disabled={players.length < 2} onClick={() => startMatch(code, lobby)}>
-          Start match
-        </button>
-      ) : (
-        <p className="status">Waiting for the host to start...</p>
-      )}
+        {isHost ? (
+          <button className="big" disabled={players.length < 2} onClick={() => startMatch(code, lobby)}>
+            Start match
+          </button>
+        ) : (
+          <p className="status">Waiting for the host to start...</p>
+        )}
 
-      <div className="buttons">
-        {isHost && <button onClick={() => setShowSettings(true)}>Settings</button>}
-        <button onClick={onLeave}>Leave</button>
+        <div className="buttons">
+          {isHost && <button onClick={() => setShowSettings(true)}>Settings</button>}
+          <button onClick={onLeave}>Leave</button>
+        </div>
       </div>
 
       {isHost && showSettings && (

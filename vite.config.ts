@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
         short_name: 'Duel',
         description: 'Western duel prototype for a uni study',
         display: 'fullscreen', // no browser UI, no status bar
-        orientation: 'portrait',
+        orientation: 'landscape', // held sideways like a pistol, barrel to the left
         start_url: '/',
         scope: '/',
         background_color: '#2b1a10',
@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,mp3,wav,ogg}'], // cache app + sounds
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,mp3,wav,ogg,woff2}'], // cache app, images, sounds, font
         navigateFallback: '/index.html',
       },
       devOptions: {

@@ -102,15 +102,16 @@ export function startMatch(code: string, lobby: Lobby) {
   return update(lobbyRef(code), { ...lives, status: 'playing', startAt: serverNow() + COUNTDOWN_MS, winnerId: null })
 }
 
-// Transaction, so two hits at the same moment can't both read the old lives
-export function loseLife(code: string) {
+// The shooter's phone rolls the hit and calls this. Transaction, so two shots at the same
+// moment can't both read the old lives, and a shot after the match ended does nothing.
+export function hitPlayer(code: string, targetId: string) {
   return runTransaction(lobbyRef(code), (cur: Lobby | null) => {
-    const me = cur?.players?.[playerId]
-    if (!cur || cur.status !== 'playing' || !me || me.lives <= 0) return cur
-    me.lives--
-    if (me.lives === 0) {
+    const target = cur?.players?.[targetId]
+    if (!cur || cur.status !== 'playing' || !target || target.lives <= 0) return cur
+    target.lives--
+    if (target.lives === 0) {
       cur.status = 'over'
-      cur.winnerId = Object.keys(cur.players).find((id) => id !== playerId)
+      cur.winnerId = Object.keys(cur.players).find((id) => id !== targetId)
     }
     return cur
   })
