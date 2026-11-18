@@ -4,7 +4,7 @@ import { unlockDevice } from './lib/device'
 import { createLobby, joinLobby, leaveLobby, playerId, watchLobby, type Lobby } from './lib/lobby'
 import { loadSettings } from './settings'
 import LobbyScreen from './Lobby'
-import { GameScreen, HitFlash, WinScreen, useHitFeedback } from './Game'
+import { GameScreen, HitFeedback, WinScreen } from './Game'
 
 // The lobby code lives in the URL (?lobby=CODE): the QR link opens it, and a reload rejoins
 const codeFromUrl = () => new URLSearchParams(location.search).get('lobby')?.toUpperCase() || null
@@ -17,7 +17,6 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const leaving = useRef(false) // our own leave also fires the listener; don't report it as "closed"
-  useHitFeedback(lobby)
 
   useEffect(() => {
     if (!joined || !code) return
@@ -84,7 +83,7 @@ export default function App() {
         {lobby.status === 'lobby' && <LobbyScreen code={code} lobby={lobby} onLeave={backToMenu} />}
         {lobby.status === 'playing' && <GameScreen code={code} lobby={lobby} />}
         {lobby.status === 'over' && <WinScreen code={code} lobby={lobby} onMenu={backToMenu} />}
-        <HitFlash lobby={lobby} />
+        <HitFeedback lobby={lobby} />
       </>
     )
   }

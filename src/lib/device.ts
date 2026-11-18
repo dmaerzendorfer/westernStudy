@@ -49,8 +49,24 @@ export function rumble(ms: number, pulses: number, gapMs: number, requestMs: num
   return pulse(ms, requestMs)
 }
 
-// Call from a tap: audio and vibration need a user gesture first. Only the first call does anything.
+// Phones only: fullscreen + landscape lock. Chrome only allows the lock in fullscreen, and
+// fullscreen needs a tap, so this runs on every Play/Join (the user may have left fullscreen).
+// The installed PWA is landscape via the manifest; if all fails, index.html shows a rotate hint.
+function lockLandscape() {
+  if (!matchMedia('(pointer: coarse)').matches) return
+  const orientation = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }
+  const lock = () => orientation.lock?.('landscape').catch(() => {})
+  if (document.fullscreenElement || matchMedia('(display-mode: fullscreen)').matches) return void lock()
+  document.documentElement
+    .requestFullscreen?.({ navigationUI: 'hide' })
+    .then(lock)
+    .catch(() => {})
+}
+
+// Call from a tap: audio and vibration need a user gesture first. Only the first call sets up
+// audio and the torch; the landscape lock runs every time.
 export async function unlockDevice() {
+  lockLandscape()
   if (audio) return
   audio = new AudioContext() // created synchronously inside the gesture
   void audio.resume()

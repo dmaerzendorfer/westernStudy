@@ -22,34 +22,25 @@ function chanceAt(s: Settings, heldMs: number, rampMs: number) {
   return base + (1 - base) * Math.min(1, Math.max(0, (heldMs - s.fillMs) / rampMs))
 }
 
-// Rumble on both phones whenever anyone loses a life
-export function useHitFeedback(lobby: Lobby | null) {
-  const total = lobby ? Object.values(lobby.players ?? {}).reduce((sum, p) => sum + p.lives, 0) : 0
-  const prev = useRef(total)
-  useEffect(() => {
-    const s = lobby?.settings
-    if (s?.rumbleOn && total < prev.current) rumble(s.rumbleMs, 1, 0, s.requestMs) // one pulse, the "full" signal uses several
-    prev.current = total
-  }, [total])
-}
-
-// Red screen flash and hit sound, only on the phone of the player who was hit. Rendered by App
-// above every screen, so the final hit still flashes while the win screen comes in.
-export function HitFlash({ lobby }: { lobby: Lobby | null }) {
+// Red screen flash, hit sound and rumble, only on the phone of the player who was hit. Rendered
+// by App above every screen, so the final hit still lands while the win screen comes in.
+export function HitFeedback({ lobby }: { lobby: Lobby | null }) {
   const lives = lobby?.players?.[playerId]?.lives ?? 0
   const prev = useRef(lives)
   const [flashes, setFlashes] = useState(0)
   useEffect(() => {
-    if (lives < prev.current) {
+    const s = lobby?.settings
+    if (s && lives < prev.current) {
       setFlashes((n) => n + 1)
-      if (lobby?.settings.soundOn) playHit()
+      if (s.soundOn) playHit()
+      if (s.rumbleOn) rumble(s.rumbleMs, s.pulses, s.gapMs, s.requestMs)
     }
     prev.current = lives
   }, [lives])
   return flashes > 0 ? <div key={flashes} className="hit-flash" /> : null
 }
 
-// Countdown, then the duel: hold anywhere to fill, rumble when full, release to shoot
+// Countdown, then the duel: hold anywhere to fill, cocking sound when full, release to shoot
 export function GameScreen({ code, lobby }: Props) {
   const s = lobby.settings
   const [now, setNow] = useState(serverNow)
@@ -87,7 +78,6 @@ export function GameScreen({ code, lobby }: Props) {
       setChance(chanceAt(s, held, h.rampMs))
       if (!h.full) {
         h.full = true
-        if (s.rumbleOn) rumble(s.rumbleMs, s.pulses, s.gapMs, s.requestMs)
         if (s.soundOn) playCock()
       }
     }
