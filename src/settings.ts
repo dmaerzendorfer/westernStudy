@@ -5,8 +5,8 @@ export const SETTING_DEFS = [
   { key: 'rumbleMs', label: 'Rumble length per pulse', unit: 'ms', min: 50, max: 500, step: 10, def: 150 },
   { key: 'pulses', label: 'Rumble pulses', unit: '', min: 1, max: 3, step: 1, def: 1 },
   { key: 'gapMs', label: 'Gap between pulses', unit: 'ms', min: 20, max: 300, step: 10, def: 80 },
-  // Calibration: Nothing OS drops short vibration requests, lowest value that still rumbles is best
-  { key: 'requestMs', label: 'Vibration request length', unit: 'ms', min: 500, max: 2000, step: 100, def: 2000 },
+  // Calibration: Nothing OS (Phone 2a) drops vibration requests of 1000 ms or less; lowest value that still rumbles is best
+  { key: 'requestMs', label: 'Vibration request length', unit: 'ms', min: 1000, max: 2000, step: 1, def: 1001 },
   { key: 'flashMs', label: 'Torch flash on shot', unit: 'ms', min: 0, max: 500, step: 10, def: 120 },
   { key: 'fillMinMs', label: 'Fill time min', unit: 'ms', min: 300, max: 4000, step: 100, def: 1200 },
   { key: 'fillMaxMs', label: 'Fill time max', unit: 'ms', min: 300, max: 4000, step: 100, def: 1800 },
