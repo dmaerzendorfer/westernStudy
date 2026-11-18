@@ -46,12 +46,12 @@ export default function App() {
     const h = hold.current
     if (!h) return
     const held = performance.now() - h.start
-    setProgress(Math.min(1, held / h.fillMs))
+    setProgress(h.fillMs ? Math.min(1, held / h.fillMs) : 1) // 0 ms fill = full on touch
     if (held >= h.fillMs) {
       setChance(chanceAt(held, h))
       if (!h.full) {
         h.full = true
-        testRumble('full')
+        if (settings.rumbleOn) testRumble('full')
       }
     }
     h.raf = requestAnimationFrame(tick)
@@ -74,8 +74,8 @@ export default function App() {
     if (h.full) {
       const c = chanceAt(held, h)
       const hit = Math.random() < c
-      playShot()
-      flash(settings.flashMs)
+      if (settings.soundOn) playShot()
+      if (settings.flashOn) flash(settings.flashMs)
       addLog(`Shot ${held.toFixed(0)} ms (to 100% in ${h.rampMs.toFixed(0)}) ${(c * 100).toFixed(0)}% -> ${hit ? 'HIT' : 'miss'}`)
     } else {
       addLog(`Interrupted at ${held.toFixed(0)} ms (fill ${h.fillMs})`)
@@ -92,7 +92,7 @@ export default function App() {
   }
 
   function testHit() {
-    playHit()
+    if (settings.soundOn) playHit()
     addLog('Got hit (test)')
   }
 
@@ -139,19 +139,30 @@ export default function App() {
           {SETTING_DEFS.map((d, i) => (
             <Fragment key={d.key}>
               {d.group !== SETTING_DEFS[i - 1]?.group && <h3>{d.group}</h3>}
-              <label>
-                <span>
-                  {d.label}: {settings[d.key]} {d.unit}
-                </span>
-                <input
-                  type="range"
-                  min={d.min}
-                  max={d.max}
-                  step={d.step}
-                  value={settings[d.key]}
-                  onChange={(e) => updateSettings({ ...settings, [d.key]: Number(e.target.value) })}
-                />
-              </label>
+              {'toggle' in d ? (
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={settings[d.key] === 1}
+                    onChange={(e) => updateSettings({ ...settings, [d.key]: e.target.checked ? 1 : 0 })}
+                  />
+                  {d.label}
+                </label>
+              ) : (
+                <label>
+                  <span>
+                    {d.label}: {settings[d.key]} {d.unit}
+                  </span>
+                  <input
+                    type="range"
+                    min={d.min}
+                    max={d.max}
+                    step={d.step}
+                    value={settings[d.key]}
+                    onChange={(e) => updateSettings({ ...settings, [d.key]: Number(e.target.value) })}
+                  />
+                </label>
+              )}
             </Fragment>
           ))}
           <div className="buttons">

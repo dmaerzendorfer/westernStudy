@@ -136,3 +136,15 @@ button {
   width: 100%;
   accent-color: #d9a441;
 }
+
+.settings .toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.settings .toggle input {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin: 0;
+}

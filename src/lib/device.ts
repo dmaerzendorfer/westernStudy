@@ -21,8 +21,9 @@ function pulse(ms: number, requestMs: number) {
 }
 
 // Short rumble: `pulses` buzzes of `ms` each, `gapMs` apart.
-// ponytail: timer-based, can jitter a few ms; the Vibration API has no intensity, use @capacitor/haptics for that
+// ponytail: timer-based, can jitter a few ms; the Vibration API has no intensity control
 export function rumble(ms: number, pulses: number, gapMs: number, requestMs: number) {
+  if (pulses < 1) return true // nothing to send
   for (let i = 1; i < pulses; i++) setTimeout(() => pulse(ms, requestMs), i * (ms + gapMs))
   return pulse(ms, requestMs)
 }
