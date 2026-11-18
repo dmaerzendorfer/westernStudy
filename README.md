@@ -114,19 +114,19 @@ Lobby flow is built: menu -> Play creates `lobbies/{code}` -> QR code / link -> 
 - Lives are updated with a Firebase transaction.
 - Hit feedback (rumble and sound) on both phones, win and lose screens.
 
-## Step 4 – Study logging
+## Step 4 – Match logging (built)
 
-Log raw events, not averages.
+Raw records, no averages. Players are identified by their name from the lobby.
 
-- **Per shot:** player, hold duration, hit chance at release, time-to-100%
-  for that round, hit or miss, lives on both sides, server timestamp.
-- **Per interrupted hold:** holds that ended without a shot.
-- **Per match:** condition, phone per player, start and end time, winner,
-  app version.
-- **Per participant:** anonymous ID (no names in the database).
+- **`events/{id}`, one per shot** (written by the shooter's phone): `type: "shot"`, `player`, `opponent`, `matchId`, `matchNumber`, `showIndicator`, `holdMs`, `fillMs`, `rampMs` (time from full circle to 100%, drawn for that shot), `hitChance` (0–1 at release), `hit`, `livesSelf` / `livesOpponent` (remaining after the shot), `clientTime`, `serverTime`.
+- **`events/{id}`, `type: "interrupted"`**: presses released before the circle was full (`holdMs`).
+- **`matches/{matchId}`**: `matchNumber`, `showIndicator`, `players`, `startAt`, `endAt`, `winner`, settings snapshot, `appVersion`.
 
-Before real sessions: set Firebase security rules (test mode expires after
-30 days) and use an EU database location.
+Logging is off by default; the host turns it on with **Log matches** in the settings drawer (leave it off for practice rounds). Match numbers count the logged matches per lobby (1, 2, 3, ...). Time to 100% is drawn per shot from a normal distribution (mean 5 s, SD 2 s by default, floor 500 ms).
+
+`events/` is write-only for the app; export it as JSON from the Firebase console (Realtime Database → ⋮ → Export JSON).
+
+Before real sessions: set Firebase security rules (test mode expires after 30 days), use an EU database location, and delete test data from `events/` and `matches/` in the console.
 
 ## Step 5 – Polish (if time allows)
 

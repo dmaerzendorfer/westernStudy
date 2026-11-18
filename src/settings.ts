@@ -17,17 +17,27 @@ export const SETTING_DEFS = [
   { group: 'Flash', key: 'flashMs', label: 'Flash length', unit: 'ms', min: 0, max: 500, step: 10, def: 120 },
   { group: 'Sound', key: 'soundOn', label: 'Shot and hit sounds', toggle: true, def: 1 },
   { group: 'Fill time', key: 'fillMs', label: 'Time to fill the circle', unit: 'ms', min: 0, max: 4000, step: 100, def: 1500 },
-  // The study condition: hit chance shown on screen or hidden
   { group: 'Hit chance', key: 'showIndicator', label: 'Show hit chance indicator', toggle: true, def: 1 },
   { group: 'Hit chance', key: 'baseChance', label: 'Hit chance when full', unit: '%', min: 0, max: 100, step: 5, def: 10 },
-  // Time from full to 100%, drawn at random between min and max on every hold
-  { group: 'Hit chance', key: 'rampMinMs', label: 'Time to 100%, min', unit: 'ms', min: 500, max: 10000, step: 100, def: 3000 },
-  { group: 'Hit chance', key: 'rampMaxMs', label: 'Time to 100%, max', unit: 'ms', min: 500, max: 10000, step: 100, def: 5000 },
+  // Time from full to 100%, drawn anew for every shot from a normal distribution
+  { group: 'Hit chance', key: 'rampMeanMs', label: 'Time to 100%, mean', unit: 'ms', min: 500, max: 10000, step: 100, def: 5000 },
+  { group: 'Hit chance', key: 'rampSdMs', label: 'Time to 100%, SD', unit: 'ms', min: 0, max: 5000, step: 100, def: 2000 },
+  // Match logging to Firebase, off by default (e.g. for practice rounds)
+  { group: 'Logging', key: 'logMatches', label: 'Log matches', toggle: true, def: 0 },
 ] as const
 
 export type Settings = Record<(typeof SETTING_DEFS)[number]['key'], number>
 
 export const DEFAULT_SETTINGS = Object.fromEntries(SETTING_DEFS.map((d) => [d.key, d.def])) as Settings
+
+// ponytail: normal distribution cut off at 500 ms, so no draw is near-instant or negative.
+// With mean 5 s / SD 2 s that affects ~1.2% of draws; log shows the value actually used.
+const MIN_RAMP_MS = 500
+export function drawRampMs(s: Settings) {
+  const u = 1 - Math.random() // (0, 1], so log() never sees 0
+  const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()) // Box-Muller
+  return Math.max(MIN_RAMP_MS, s.rampMeanMs + z * s.rampSdMs)
+}
 
 const STORAGE_KEY = 'demo-settings'
 

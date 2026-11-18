@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import { flash, playBeep, playCock, playHit, playShot, rumble } from './lib/device'
 import { backToLobby, hitPlayer, playerId, serverNow, type Lobby } from './lib/lobby'
-import type { Settings } from './settings'
+import { drawRampMs, type Settings } from './settings'
+import { logInterrupted, logShot } from './lib/study'
 import revolverUrl from './assets/revolver.webp'
 
 type Props = { code: string; lobby: Lobby }
@@ -87,12 +88,11 @@ export function GameScreen({ code, lobby }: Props) {
   function onDown(e: PointerEvent<HTMLElement>) {
     if (counting || hold.current) return
     e.currentTarget.setPointerCapture(e.pointerId) // keep the hold if the finger slides
-    const rampMs = s.rampMinMs + Math.random() * (s.rampMaxMs - s.rampMinMs)
-    hold.current = { start: performance.now(), rampMs, full: false, raf: 0 }
+    hold.current = { start: performance.now(), rampMs: drawRampMs(s), full: false, raf: 0 }
     tick()
   }
 
-  // Release when full = shot. Released early = nothing happens (Step 4 logs it as interrupted).
+  // Release when full = shot. Released early = no shot, only logged as interrupted.
   function onUp() {
     const h = hold.current
     if (!h) return
@@ -100,9 +100,12 @@ export function GameScreen({ code, lobby }: Props) {
     cancelAnimationFrame(h.raf)
     setProgress(0)
     setChance(0)
-    if (!h.full) return
+    const holdMs = performance.now() - h.start
+    if (!h.full) return logInterrupted(lobby, holdMs)
 
-    const hit = Math.random() < chanceAt(s, performance.now() - h.start, h.rampMs)
+    const hitChance = chanceAt(s, holdMs, h.rampMs)
+    const hit = Math.random() < hitChance
+    logShot(lobby, { holdMs, rampMs: h.rampMs, hitChance, hit })
     if (s.soundOn) playShot()
     if (s.flashOn) flash(s.flashMs)
     setShots((n) => n + 1)
